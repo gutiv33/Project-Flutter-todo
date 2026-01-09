@@ -3,6 +3,9 @@ import '../model/todo.dart';
 import '../components/todo_item.dart';
 import '../screens/edit.dart';
 import '../screens/add.dart';
+import '../model/hive.dart';
+
+final repo = TodoRepository();
 
 class Home extends StatefulWidget {
 
@@ -15,15 +18,19 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
-  // final todoList :Todo;
   late List<Todo> todoList = [];
-  final _todoController = TextEditingController();
 
-  // @override
-  // void initState() {
-  //   _foundTodo = todoList;
-  //   super.initState();
-  // }
+  void initState() {
+    super.initState();
+    _loadTodos();
+  }
+
+  void _loadTodos() {
+
+    setState(() {
+      todoList = repo.getTodos();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,39 +80,7 @@ class _HomeState extends State<Home> {
             // alignment: Alignment.bottomCenter,
             alignment: Alignment.bottomRight,
             child:Row(children: [
-              // Expanded(child:Container(
-              //   margin: EdgeInsets.only(
-              //     bottom: 20,
-              //     right: 20,
-              //     left:20,
-              //   ),
-              //   padding: EdgeInsets.symmetric(
-              //     horizontal: 20,
-              //     vertical: 5
-              //   ),
-                // decoration: BoxDecoration(
-                //   color: Colors.white, // กล่องเพิ่มข้อความ
-                //   boxShadow: const [
-                //     BoxShadow(
-                //       color: Colors.blueGrey, //สีของเงา
-                //       offset: Offset(0, 0),
-                //       blurRadius: 10,
-                //       spreadRadius: 0,
-                //
-                //     ),
-                //   ],
-                //   borderRadius: BorderRadius.circular(10)
-                // ),
-                // child: TextField(
-                //   controller: _todoController,
-                //   decoration: InputDecoration(
-                //     hintText: 'Add item to do',
-                //     border: InputBorder.none
-                //   ),
-                // ),
-            //   ),
-            // ),
-            Container(
+             Container(
               margin: EdgeInsets.only(
                 bottom: 20,
                 right: 20,
@@ -134,28 +109,22 @@ class _HomeState extends State<Home> {
     );
   }
   void _handleToDoChange(Todo todo) {
+
     setState((){
       todo.isDone = !todo.isDone;
     });
+
+    repo.updateTodo(todo);
   }
 
   void _deleteTodoItem(String id) {
+
     setState(() {
       todoList.removeWhere((item) => item.id == id);
     });
-  }
 
-  // void _addToDoItem(String text) {
-  //   setState(() {
-  //     todoList.add(Todo(
-  //       id:DateTime.now().millisecondsSinceEpoch.toString(),
-  //       toDoText: text ,
-  //       isDone: false,
-  //       dueDate: DateTime.now(),
-  //     ));
-  //   });
-  //   // _todoController.clear();
-  // }
+    repo.deleteTodo(id);
+  }
 
   void _runFilter(String enteredKeyword) {
     List<Todo> results = [];
@@ -173,79 +142,72 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _editToDo(Todo todo) {
-  setState(() {
 
-    final index = todoList.indexWhere((item) => item.id == todo.id);
-    if (index != -1) {
-      todoList[index] ;
-
-    }
-
-  });
-}
 
   void _goToAddPage() async {
-    final Todo? result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => Add()),
     );
-
-    if (result != null) {
-      // _addToDoItem(_todoController.text);
-      setState(() {
-        todoList.add(result);
-      });
-    }
+    _loadTodos();
+    // if (result != null) {
+    //   // _addToDoItem(_todoController.text);
+    //   setState(() {
+    //     todoList.add(result);
+    //   });
+    // }
   }
 
 
   void _goToEditPage(Todo todo) async {
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => Edit(todo: todo),
       ),
     );
 
-    if (result != null) {
-      // _editToDo(todo);
-      setState(() {
-        final index = todoList.indexWhere((item) => item.id == todo.id);
-        if (index != -1) {
-          todoList[index] = result ;
+    _loadTodos();
 
-        }
-      });
-    }
+    // if (result != null) {
+    //   // _editToDo(todo);
+    //   setState(() {
+    //     final index = todoList.indexWhere((item) => item.id == todo.id);
+    //     if (index != -1) {
+    //       todoList[index] = result ;
+    //
+    //     }
+    //   });
+    // }
   }
 
   Widget searchBox() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 15),
-      decoration: BoxDecoration(
-          color: Colors.orange[100],
-          borderRadius: BorderRadius.circular(20)
-      ),
-      child: TextField(
-        onChanged: (value) => _runFilter(value),
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.all(0),
-          prefixIcon: Icon(
-            Icons.search,
-            color: Colors.black87, //สี icon
-            size: 20,
+          decoration: BoxDecoration(
+            color: Colors.orange[100],
+            borderRadius: BorderRadius.circular(20.0)
           ),
-          prefixIconConstraints: BoxConstraints(
-              maxHeight: 20,
-              minWidth: 25
-          ),
-          border: InputBorder.none,
-          hintText: 'SEARCH',
-          hintStyle: TextStyle(color: Colors.brown), //สีตัวอักษรที่เป็นตัว hint
-        ),
-      ),
-    );
+            child: TextField(
+              onChanged: (value) => _runFilter(value),
+              decoration: InputDecoration(
+              contentPadding: EdgeInsets.all(0),
+              prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.black87, //สี icon
+                  size: 20,
+              ),
+              prefixIconConstraints: BoxConstraints(
+                  maxHeight: 20,
+                  minWidth: 25
+              ),
+              border: InputBorder.none,
+              hintText: 'SEARCH',
+              hintStyle: TextStyle(color: Colors.brown), //สีตัวอักษรที่เป็นตัว hint
+              ),
+            ),
+          );
+
   }
 
 

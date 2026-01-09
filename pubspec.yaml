@@ -40,6 +40,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   table_calendar: ^3.2.0
+  hive: ^2.2.3 # เพิ่มการเก็บข้อมูล
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -51,7 +53,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-
+  hive_generator: ^2.0.1 #ใช้สร้าง TypeAdapter ให้กับ model ของคุณอัตโนมัติ
+  build_runner: ^2.4.13 #tool ของ Dart/Flutter สำหรับรัน code generators
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

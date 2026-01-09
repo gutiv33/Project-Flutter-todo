@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/todo.dart';
 import 'package:intl/intl.dart';
+import '../model/hive.dart';
 
 class Edit extends StatefulWidget {
 
@@ -100,12 +101,17 @@ class _EditState extends State<Edit> {
                 ElevatedButton(
                   onPressed: () {
                     if (_controller.text.isNotEmpty) {
-                      Navigator.pop(context,Todo(
-                        id:widget.todo.id,
-                        toDoText: _controller.text,
-                        dueDate: _selectedDate,
-                        isDone: widget.todo.isDone
-                      ) );
+
+                      final editTodo = Todo(
+                          id:widget.todo.id,
+                          toDoText: _controller.text,
+                          dueDate: _selectedDate,
+                          isDone: widget.todo.isDone
+                      );
+
+                      final repo = TodoRepository();
+                      repo.updateTodo(editTodo);
+                      Navigator.pop(context );
                     }
                   },
                   child: const Text('บันทึก'),

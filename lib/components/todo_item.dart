@@ -40,7 +40,7 @@ class TodoItem extends StatelessWidget {
             fontSize: 16,
             color: Colors.white, // สีตัวอักษร
             fontWeight: FontWeight.bold,
-            decoration:todo.isDone?? false  ? TextDecoration.lineThrough:null
+            decoration:todo.isDone ? TextDecoration.lineThrough:null
           ),
         ),
 

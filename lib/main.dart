@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_todo/model/todo.dart';
 import './screens/home.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); //เตรียมระบบพื้นฐานของแอปให้พร้อม
+
+  // init hive
+  await Hive.initFlutter(); //แอปนี้เป็น Flutter นะ เก็บไฟล์ตามระบบของ Flutter
+  // register model
+  Hive.registerAdapter(TodoAdapter()); //รูปแบบข้อมูลชื่อ Todo
+  //open box
+  await Hive.openBox<Todo>('todos'); //เปิด “กล่องเก็บข้อมูล” ชื่อ todos โดยข้างในจะมี todo
+
   runApp(const MyApp());
 }
 

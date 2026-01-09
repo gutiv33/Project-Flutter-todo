@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../model/todo.dart';
+import '../model/hive.dart';
+import 'package:hive/hive.dart';
 
 class Add extends StatefulWidget {
   final Todo? todo;
@@ -26,10 +28,10 @@ class _AddState extends State<Add> {
   }
 
   @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
+  // void dispose() {
+  //   _textController.dispose();
+  //   super.dispose();
+  // }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -47,18 +49,27 @@ class _AddState extends State<Add> {
   }
 
   void _saveTodo() {
-    if (_textController.text.trim().isEmpty) return;
+    if (_textController.text.trim().isEmpty) return; // เช็คการมีอยู่ว่ามีการกรอกเข้ามาหรือยัง
 
-    Navigator.pop(
-      context,
-      Todo(
-        id: widget.todo?.id ??
-            DateTime.now().millisecondsSinceEpoch.toString(),
-        toDoText: _textController.text,
-        dueDate: _selectedDate,
-        isDone: widget.todo?.isDone ?? false,
-      ),
+    final newTodo =  Todo(
+      id: widget.todo?.id ??
+      DateTime.now().millisecondsSinceEpoch.toString(),
+      toDoText: _textController.text,
+      dueDate: _selectedDate,
+      isDone: widget.todo?.isDone ?? false,
     );
+
+    final repo = TodoRepository();
+    repo.addTodo(newTodo);
+
+    var box = Hive.box<Todo>('todos');
+    print('Hive box length: ${box.length}');
+    for (var todo in box.values) {
+      print('Todo: ${todo.toDoText}, due: ${todo.dueDate}');
+    }
+
+
+    Navigator.pop(context);
   }
 
   @override
@@ -80,7 +91,7 @@ class _AddState extends State<Add> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Todo text
+
             const Text(
               'สิ่งที่ต้องทำ',
               style: TextStyle(fontWeight: FontWeight.bold),
