@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../model/todo.dart';
 import '../components/todo_item.dart';
-import '../screens/edit.dart';
-import '../screens/add.dart';
-import '../model/hive.dart';
-
-final repo = TodoRepository();
+import '../model/todo_local_storage.dart';
 
 class Home extends StatefulWidget {
 
@@ -19,16 +16,20 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
 
   late List<Todo> todoList = [];
+  // final _todoController = TextEditingController();
+  final storage = Todolocalstorage();
 
+  @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    _loadTodos();
+    _loadList();
   }
 
-  void _loadTodos() {
-
+  void _loadList() async {
+    final todos = await storage.loadTodo();
     setState(() {
-      todoList = repo.getTodos();
+      todoList = todos;
     });
   }
 
@@ -114,7 +115,7 @@ class _HomeState extends State<Home> {
       todo.isDone = !todo.isDone;
     });
 
-    repo.updateTodo(todo);
+    storage.saveTodo(todoList);
   }
 
   void _deleteTodoItem(String id) {
@@ -123,7 +124,8 @@ class _HomeState extends State<Home> {
       todoList.removeWhere((item) => item.id == id);
     });
 
-    repo.deleteTodo(id);
+    storage.saveTodo(todoList);
+
   }
 
   void _runFilter(String enteredKeyword) {
@@ -142,43 +144,49 @@ class _HomeState extends State<Home> {
     });
   }
 
-
-
   void _goToAddPage() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => Add()),
-    );
-    _loadTodos();
-    // if (result != null) {
+    final Todo? result = await context.push('/add');
+   // final Todo? result = await Navigator.push(
+     // context
+     // MaterialPageRoute(builder: (_) => Add())
+   // );
+
+    // storage.loadTodo();
+    if (result != null) {
     //   // _addToDoItem(_todoController.text);
-    //   setState(() {
-    //     todoList.add(result);
-    //   });
-    // }
+      setState(() {
+        todoList.add(result);
+
+      });
+      storage.saveTodo(todoList);
+    }
   }
 
-
   void _goToEditPage(Todo todo) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Edit(todo: todo),
-      ),
-    );
+    // final result = await Navigator.push(
+    final result = await context.push<Todo>(
+        '/edit',
+        extra: todo,
+      ) ;
+      // MaterialPageRoute(
+      //   builder: (_) => Edit(todo: todo),
+      // ),
+    // );
 
-    _loadTodos();
+    // storage.loadTodo(); -> เพราะตรงนี้มีการ loadTodo ที่มีคว่ทซำ้ซ้อน ทำให้มีการเขียนทับข้อมูลเก่า
 
-    // if (result != null) {
+    if (result != null) {
     //   // _editToDo(todo);
-    //   setState(() {
-    //     final index = todoList.indexWhere((item) => item.id == todo.id);
-    //     if (index != -1) {
-    //       todoList[index] = result ;
-    //
-    //     }
-    //   });
-    // }
+      setState(() {
+        final index = todoList.indexWhere((item) => item.id == todo.id);
+        if (index != -1) {
+          todoList[index] = result ;
+
+        }
+      });
+
+      storage.saveTodo(todoList);
+    }
   }
 
   Widget searchBox() {
@@ -216,10 +224,16 @@ class _HomeState extends State<Home> {
       backgroundColor: Colors.blue[300],
       elevation: 0,
       title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,children: [
-        Icon(
-              Icons.menu_open_rounded,
+
+        IconButton(
+              onPressed: () {
+                context.go('/welcome');
+                // Navigator.pop(context,MaterialPageRoute(builder: (context) => Welcome() )) ;
+              },
+              icon:Icon(Icons.menu_open_rounded,
               color: Colors.black87,
               size: 30,
+              ),
             ),
         Text(
           'TO DO',

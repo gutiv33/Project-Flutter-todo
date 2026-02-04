@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../model/todo.dart';
 import 'package:intl/intl.dart';
-import '../model/hive.dart';
+
 
 class Edit extends StatefulWidget {
 
@@ -95,23 +96,26 @@ class _EditState extends State<Edit> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),  // Navigator.pop(context), -> ออกจากหน้า edit แล้วจะไม่มีการส่งค่ากลับไปที่หน้า Home()
                   child: const Text('ยกเลิก'),
                 ),
                 ElevatedButton(
                   onPressed: () {
                     if (_controller.text.isNotEmpty) {
 
-                      final editTodo = Todo(
+                      context.pop(Todo(
                           id:widget.todo.id,
                           toDoText: _controller.text,
                           dueDate: _selectedDate,
                           isDone: widget.todo.isDone
-                      );
+                      ));
 
-                      final repo = TodoRepository();
-                      repo.updateTodo(editTodo);
-                      Navigator.pop(context );
+                      // Navigator.pop(context,Todo(
+                      //     id:widget.todo.id,
+                      //     toDoText: _controller.text,
+                      //     dueDate: _selectedDate,
+                      //     isDone: widget.todo.isDone
+                      // ));
                     }
                   },
                   child: const Text('บันทึก'),
